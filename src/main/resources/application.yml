@@ -1,0 +1,106 @@
+spring:
+  application:
+    name: gateway-service
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: never
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8090}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+spring.data.redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: wisewallet
+
+gateway:
+  routes:
+    account-service:
+      uri: ${ACCOUNT_SERVICE_URL:http://account-service:8081}
+    transaction-service:
+      uri: ${TRANSACTION_SERVICE_URL:http://transaction-service:8082}
+    notification-service:
+      uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8083}
+    advisor-service:
+      uri: ${ADVISOR_SERVICE_URL:http://advisor-service:8084}
+  rate-limit:
+    public:
+      replenish-rate: 5
+      burst-capacity: 10
+    user:
+      replenish-rate: 20
+      burst-capacity: 40
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 80
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpen: true
+        registerHealthIndicator: true
+    instances:
+      account-service-cb:
+        baseConfig: default
+        slowCallDurationThreshold: 5s
+      transaction-service-cb:
+        baseConfig: default
+        slowCallDurationThreshold: 8s
+      notification-service-cb:
+        baseConfig: default
+        slowCallDurationThreshold: 5s
+      advisor-service-cb:
+        baseConfig: default
+        slowCallDurationThreshold: 30s
+  timelimiter:
+    instances:
+      account-service-cb:
+        timeoutDuration: 5s
+      transaction-service-cb:
+        timeoutDuration: 8s
+      notification-service-cb:
+        timeoutDuration: 5s
+      advisor-service-cb:
+        timeoutDuration: 30s
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 200ms
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+    instances:
+      account-service-cb:
+        baseConfig: default
+      transaction-service-cb:
+        baseConfig: default
+      notification-service-cb:
+        baseConfig: default
+
+logging:
+  level:
+    com.wisewallet: INFO

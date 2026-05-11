@@ -1,0 +1,25 @@
+gateway:
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+gateway:
+  routes:
+    account-service:
+      uri: http://account-service:8081
+    transaction-service:
+      uri: http://transaction-service:8082
+    notification-service:
+      uri: http://notification-service:8083
+    advisor-service:
+      uri: http://advisor-service:8084
+
+logging:
+  level:
+    com.wisewallet: DEBUG

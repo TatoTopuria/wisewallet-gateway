@@ -1,0 +1,10 @@
+gateway:
+  cors:
+    allowed-origins:
+      - https://app.wisewallet.io
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,circuitbreakers
