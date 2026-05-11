@@ -23,14 +23,15 @@ public class JwtBlocklistService {
 
     /**
      * Returns true if the given jti is on the revocation blocklist.
-     * Fails open on timeout or Redis unavailability (returns false with WARN log).
+     * Fails closed on timeout or Redis unavailability (returns true with ERROR log)
+     * to prevent revoked tokens from being accepted.
      */
     public Mono<Boolean> isBlocked(String jti) {
         return redisTemplate.hasKey(KEY_PREFIX + jti)
                 .timeout(CHECK_TIMEOUT)
                 .onErrorResume(ex -> {
-                    log.warn("Redis blocklist check failed for jti={}, failing open. Cause: {}", jti, ex.getMessage());
-                    return Mono.just(Boolean.FALSE);
+                    log.error("Redis blocklist check failed for jti={}, failing closed. Cause: {}", jti, ex.getMessage());
+                    return Mono.just(Boolean.TRUE);
                 });
     }
 }

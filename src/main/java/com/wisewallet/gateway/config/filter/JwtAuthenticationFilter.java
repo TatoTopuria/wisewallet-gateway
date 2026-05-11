@@ -1,6 +1,7 @@
 package com.wisewallet.gateway.config.filter;
 
 import com.wisewallet.gateway.blocklist.JwtBlocklistService;
+import com.wisewallet.gateway.jwt.InternalJwtSigner;
 import com.wisewallet.gateway.jwt.JwtClaims;
 import com.wisewallet.gateway.jwt.JwtValidationException;
 import com.wisewallet.gateway.jwt.JwtValidator;
@@ -38,10 +39,14 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtValidator jwtValidator;
     private final JwtBlocklistService blocklistService;
+    private final InternalJwtSigner internalJwtSigner;
 
-    public JwtAuthenticationFilter(JwtValidator jwtValidator, JwtBlocklistService blocklistService) {
+    public JwtAuthenticationFilter(JwtValidator jwtValidator,
+                                   JwtBlocklistService blocklistService,
+                                   InternalJwtSigner internalJwtSigner) {
         this.jwtValidator = jwtValidator;
         this.blocklistService = blocklistService;
+        this.internalJwtSigner = internalJwtSigner;
     }
 
     @Override
@@ -78,10 +83,14 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                         return writeError(exchange, HttpStatus.UNAUTHORIZED, "Token has been revoked");
                     }
 
+                    String serviceToken = internalJwtSigner.sign(
+                            claims.userId(), claims.roles(), claims.accountIds());
+
                     ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                             .header("X-User-Id", claims.userId())
                             .header("X-User-Roles", String.join(",", claims.roles()))
                             .header("X-Account-Ids", String.join(",", claims.accountIds()))
+                            .header("X-Service-Token", serviceToken)
                             .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
                             .build();
 

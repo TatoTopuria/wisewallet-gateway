@@ -31,6 +31,12 @@ jwt:
   secret: ${JWT_SECRET}
   issuer: wisewallet
 
+wisewallet:
+  internal:
+    jwt:
+      secret: ${INTERNAL_JWT_SECRET}
+      ttl-seconds: 30
+
 gateway:
   routes:
     account-service:

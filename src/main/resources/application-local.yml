@@ -18,6 +18,13 @@ spring:
       host: localhost
       port: 6379
 
+# Local dev: hardcoded internal JWT secret (min 32 chars)
+# Override via INTERNAL_JWT_SECRET env var for all other environments
+wisewallet:
+  internal:
+    jwt:
+      secret: local-dev-internal-jwt-secret-needs-32chars!
+
 management:
   endpoints:
     web:
