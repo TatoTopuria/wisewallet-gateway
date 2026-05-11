@@ -2,14 +2,6 @@ gateway:
   cors:
     allowed-origins:
       - http://localhost:3000
-
-spring:
-  data:
-    redis:
-      host: redis
-      port: 6379
-
-gateway:
   routes:
     account-service:
       uri: http://account-service:8081
@@ -19,6 +11,12 @@ gateway:
       uri: http://notification-service:8083
     advisor-service:
       uri: http://advisor-service:8084
+
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
 
 logging:
   level:
