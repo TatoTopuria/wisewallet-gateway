@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.springBoot)
     alias(libs.plugins.springDepMgmt)
     java
+    id("com.github.ben-manes.versions") version "0.51.0"
 }
 
 dependencyManagement {
